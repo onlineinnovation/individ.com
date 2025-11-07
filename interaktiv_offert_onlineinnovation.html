@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offert - OnlineInnovation</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #111827; margin: 0; padding: 0; }
+    .container { max-width: 850px; margin: 40px auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
+    header { background: #0072CE; color: #fff; text-align: center; padding: 40px 20px; }
+    header img { height: 70px; margin-bottom: 10px; }
+    header h1 { margin: 10px 0 5px; font-size: 28px; }
+    header p { margin: 3px 0; }
+    section { padding: 30px 40px; }
+    h2 { color: #0072CE; font-size: 18px; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th { background: #0072CE; color: white; text-align: left; padding: 8px; }
+    td { border: 1px solid #ddd; padding: 8px; }
+    .signature-section { border-top: 1px solid #ddd; background: #f3f4f6; padding: 30px 40px; }
+    canvas { border: 1px solid #ccc; border-radius: 6px; cursor: crosshair; }
+    .btn { background: #0072CE; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+    .btn:hover { background: #005fa3; transform: scale(1.02); }
+    .confirm { display: none; margin-top: 15px; color: green; font-weight: 600; }
+    input { border: 1px solid #ccc; border-radius: 6px; padding: 8px; width: 250px; }
+  </style>
+</head>
+<body>
+  <div class="container" id="offert">
+    <header>
+      <img src="images/onlineinnovation-logo.png" alt="OnlineInnovation logotyp">
+      <h1>Offert</h1>
+      <p>Digital Marknadsföring för Individ.com</p>
+      <p>Kompaniet AB</p>
+      <p>Utfärdad: 2025-11-07 | Giltig till: 2025-11-30</p>
+      <p>Från: OnlineInnovation.se</p>
+    </header>
+
+    <section>
+      <h2>1. Kontaktperson</h2>
+      <p><b>William Rosell</b><br>Certifierad Google Ads-specialist | Digital strateg<br>
+        📞 +46 727 08 24 27<br>📧 william@onlineinnovation.se<br>🌐 www.onlineinnovation.se</p>
+
+      <h2>2. Uppdraget</h2>
+      <p><b>Mål:</b> Att etablera och accelerera Kompaniet AB:s försäljning av exklusivt mode via Shopify genom strategiskt optimerad annonsering på Google (Search och Shopping).</p>
+      <p><b>Syfte:</b> Att positionera Kompaniet AB som ett ledande high-end-varumärke inom sin kategori och driva lönsam trafik med hög köpkraft.</p>
+
+      <h2>3. Strategi & Genomförandeplan</h2>
+      <p><b>Steg 1 — Google Ads & Löpande Optimering</b><br>
+        • Uppbyggnad av Google Search- och Shopping-kampanjer<br>
+        • Optimering av annonser för premium-segment (tonalitet, bildval, CTA)<br>
+        • Avancerad sökords- och målgruppsanalys<br>
+        • Löpande justering av budstrategier, budget och placeringar<br>
+        • Uteslutning av icke-konverterande trafik för optimal ROI<br>
+        • Kontinuerlig A/B-testning och månadsrapporter<br><br>
+        <b>Steg 2 — Spårning & Analys (GA4, GTM, GMC)</b><br>
+        • Implementering av konverteringsmål och integrationer<br>
+        • Koppling till Google Merchant Center<br>
+        • Integration med Google Search Console<br>
+        • Datadriven analys för kontinuerlig förbättring.
+      </p>
+
+      <h2>4. Planering & Kostnad</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tjänst</th>
+            <th>Specifikation</th>
+            <th>Pris (exkl. moms)</th>
+            <th>Leveransdatum</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Standarduppsättning GA4 / GTM / GMC</td>
+            <td>Enligt beskrivning ovan</td>
+            <td><s>9 950 kr</s> <b style="color:green">Ingår utan kostnad</b></td>
+            <td>2025-11-07</td>
+          </tr>
+          <tr>
+            <td>Google Ads & Löpande Optimering</td>
+            <td>Månadsvis, min. 3 månader</td>
+            <td>11 900 kr / månad</td>
+            <td>Start 2025-11-07</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>5. Avtalsvillkor</h2>
+      <ul>
+        <li>Fakturering: Månadsvis i utförandemånaden</li>
+        <li>Betalningsvillkor: 30 dagar netto</li>
+        <li>Försenad betalning: Påminnelseavgift + 16 % dröjsmålsränta</li>
+        <li>Uppsägning: Efter bindningstid, 1 månad uppsägningstid</li>
+        <li>Offert giltig till: 2025-11-30</li>
+      </ul>
+    </section>
+
+    <div class="signature-section">
+      <h2>6. Signering</h2>
+      <p>Genom signering bekräftas att ovanstående offert och villkor godkänns. Allmänna villkor gäller som en del av detta avtal.</p>
+      <p><b>Namn:</b> <input type="text" id="name"> &nbsp; <b>Datum:</b> <input type="date" id="date"></p>
+      <p><b>Signatur:</b></p>
+      <canvas id="signature-pad" width="600" height="150"></canvas><br><br>
+      <button class="btn" id="download">Signera & ladda ner PDF</button>
+      <div class="confirm" id="confirm-msg">✅ Tack! Offerten har laddats ner med din signatur.</div>
+    </div>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    canvas.addEventListener('mousedown', () => drawing = true);
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mousemove', draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#000';
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    document.getElementById('download').addEventListener('click', () => {
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      pdf.html(document.getElementById('offert'), {
+        callback: function (doc) {
+          const imgData = canvas.toDataURL('image/png');
+          doc.addImage(imgData, 'PNG', 50, 700, 200, 60);
+          doc.save('Offert_KompanietAB_OnlineInnovation.pdf');
+          document.getElementById('confirm-msg').style.display = 'block';
+        },
+        html2canvas: { scale: 0.7 }
+      });
+    });
+  </script>
+</body>
+</html>
