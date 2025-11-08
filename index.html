@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offert - OnlineInnovation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #111827; margin: 0; padding: 0; }
@@ -17,12 +18,9 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
     th { background: #0072CE; color: white; text-align: left; padding: 8px; }
     td { border: 1px solid #ddd; padding: 8px; }
-    .signature-section { border-top: 1px solid #ddd; background: #f3f4f6; padding: 30px 40px; }
-    canvas { border: 1px solid #ccc; border-radius: 6px; cursor: crosshair; }
-    .btn { background: #0072CE; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background 0.2s, transform 0.1s; }
-    .btn:hover { background: #005fa3; transform: scale(1.02); }
+    .signature-section { border-top: 1px solid #e2e8f0; background: #f3f4f6; }
+    canvas { border-radius: 0.75rem; cursor: crosshair; border: 1px dashed #94a3b8; background: #fff; }
     .confirm { display: none; margin-top: 15px; color: green; font-weight: 600; }
-    input { border: 1px solid #ccc; border-radius: 6px; padding: 8px; width: 250px; }
   </style>
 </head>
 <body>
@@ -96,15 +94,50 @@
       </ul>
     </section>
 
-    <div class="signature-section">
-      <h2>6. Signering</h2>
-      <p>Genom signering bekräftas att ovanstående offert och villkor godkänns. Allmänna villkor gäller som en del av detta avtal.</p>
-      <p><b>Namn:</b> <input type="text" id="name"> &nbsp; <b>Datum:</b> <input type="date" id="date"></p>
-      <p><b>Signatur:</b></p>
-      <canvas id="signature-pad" width="600" height="150"></canvas><br><br>
-      <button class="btn" id="download">Signera & ladda ner PDF</button>
+    <section class="signature-section px-6 py-12 sm:px-12" id="signera">
+      <div class="max-w-3xl">
+        <div class="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+          <span class="rounded-full bg-slate-200 px-3 py-1" data-progress="name">1. Namn</span>
+          <span class="rounded-full bg-slate-200 px-3 py-1" data-progress="date">2. Datum</span>
+          <span class="rounded-full bg-slate-200 px-3 py-1" data-progress="sign">3. Signatur</span>
+        </div>
+        <h2 class="mt-6 text-2xl font-semibold text-slate-900">6. Signering</h2>
+        <p class="mt-2 text-slate-600">Genom att fylla i dina uppgifter och signera bekräftar du att offerten och dess villkor accepteras. Allmänna villkor gäller som en del av avtalet.</p>
+      </div>
+
+      <div class="mt-8 grid gap-6 md:grid-cols-2">
+        <label class="flex flex-col gap-2 text-sm font-medium text-slate-700">
+          Fullständigt namn
+          <input type="text" id="name" placeholder="Ex. Anna Andersson" class="rounded-xl border border-slate-200 px-4 py-3 text-base shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" />
+        </label>
+        <label class="flex flex-col gap-2 text-sm font-medium text-slate-700">
+          Datum
+          <input type="date" id="date" class="rounded-xl border border-slate-200 px-4 py-3 text-base shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" />
+        </label>
+      </div>
+
+      <div class="mt-8">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Digital signatur</p>
+          <button type="button" id="clear-signature" class="text-sm font-semibold text-slate-500 transition hover:text-slate-900">Rensa signatur</button>
+        </div>
+        <div class="mt-3 rounded-2xl border border-dashed border-slate-300 bg-white p-4 shadow-inner">
+          <canvas id="signature-pad" width="600" height="180" class="w-full"></canvas>
+          <p class="mt-2 text-xs text-slate-400">Signera med mus eller touch-skärm.</p>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <button class="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition disabled:cursor-not-allowed disabled:bg-slate-400" id="download" disabled>
+          Signera &amp; ladda ner PDF
+        </button>
+        <button type="button" id="preview" class="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400">
+          Förhandsgranska PDF
+        </button>
+        <span class="text-sm text-slate-500" id="status-text">Fyll i fälten och signera för att aktivera nedladdning.</span>
+      </div>
       <div class="confirm" id="confirm-msg">✅ Tack! Offerten har laddats ner med din signatur.</div>
-    </div>
+    </section>
   </div>
 
   <script>
@@ -112,34 +145,117 @@
     const canvas = document.getElementById('signature-pad');
     const ctx = canvas.getContext('2d');
     let drawing = false;
+    let hasSignature = false;
+    const nameInput = document.getElementById('name');
+    const dateInput = document.getElementById('date');
+    const downloadBtn = document.getElementById('download');
+    const previewBtn = document.getElementById('preview');
+    const statusText = document.getElementById('status-text');
+    const checkpoints = {
+      name: document.querySelector('[data-progress="name"]'),
+      date: document.querySelector('[data-progress="date"]'),
+      sign: document.querySelector('[data-progress="sign"]')
+    };
 
-    canvas.addEventListener('mousedown', () => drawing = true);
-    canvas.addEventListener('mouseup', () => drawing = false);
-    canvas.addEventListener('mousemove', draw);
+    const setCheckpoint = (key, done) => {
+      if (!checkpoints[key]) return;
+      checkpoints[key].classList.toggle('bg-green-500', done);
+      checkpoints[key].classList.toggle('text-white', done);
+      checkpoints[key].classList.toggle('bg-slate-200', !done);
+      checkpoints[key].classList.toggle('text-slate-500', !done);
+    };
+
+    const updateActions = () => {
+      const ready = nameInput.value.trim().length > 1 && dateInput.value && hasSignature;
+      downloadBtn.disabled = !ready;
+      statusText.textContent = ready ? 'Allt klart! Klicka på "Signera & ladda ner".' : 'Fyll i fälten och signera för att aktivera nedladdning.';
+      setCheckpoint('name', nameInput.value.trim().length > 1);
+      setCheckpoint('date', !!dateInput.value);
+      setCheckpoint('sign', hasSignature);
+    };
+
+    const getCoords = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      if (event.touches && event.touches[0]) {
+        return {
+          x: event.touches[0].clientX - rect.left,
+          y: event.touches[0].clientY - rect.top
+        };
+      }
+      return { x: event.offsetX, y: event.offsetY };
+    };
+
+    const startDrawing = (event) => {
+      drawing = true;
+      draw(event);
+    };
+
+    const endDrawing = () => {
+      drawing = false;
+      ctx.beginPath();
+      if (!hasSignature) {
+        hasSignature = true;
+        updateActions();
+      }
+    };
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', endDrawing);
+    canvas.addEventListener('mouseleave', endDrawing);
+    canvas.addEventListener('mousemove', (event) => draw(event));
+    canvas.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      startDrawing(event);
+    });
+    canvas.addEventListener('touchend', (event) => {
+      event.preventDefault();
+      endDrawing();
+    });
+    canvas.addEventListener('touchmove', (event) => {
+      event.preventDefault();
+      draw(event);
+    });
 
     function draw(e) {
       if (!drawing) return;
+      const { x, y } = getCoords(e);
       ctx.lineWidth = 2;
       ctx.lineCap = 'round';
       ctx.strokeStyle = '#000';
-      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.lineTo(x, y);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(e.offsetX, e.offsetY);
+      ctx.moveTo(x, y);
     }
 
-    document.getElementById('download').addEventListener('click', () => {
+    document.getElementById('clear-signature').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasSignature = false;
+      updateActions();
+    });
+
+    [nameInput, dateInput].forEach((input) => input.addEventListener('input', updateActions));
+    updateActions();
+
+    const generatePDF = (save = false) => {
       const pdf = new jsPDF('p', 'pt', 'a4');
       pdf.html(document.getElementById('offert'), {
         callback: function (doc) {
           const imgData = canvas.toDataURL('image/png');
           doc.addImage(imgData, 'PNG', 50, 700, 200, 60);
-          doc.save('Offert_KompanietAB_OnlineInnovation.pdf');
-          document.getElementById('confirm-msg').style.display = 'block';
+          if (save) {
+            doc.save('Offert_KompanietAB_OnlineInnovation.pdf');
+            document.getElementById('confirm-msg').style.display = 'block';
+          } else {
+            window.open(doc.output('bloburl'), '_blank');
+          }
         },
         html2canvas: { scale: 0.7 }
       });
-    });
+    };
+
+    downloadBtn.addEventListener('click', () => generatePDF(true));
+    previewBtn.addEventListener('click', () => generatePDF(false));
   </script>
 </body>
 </html>
