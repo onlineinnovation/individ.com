@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offert - OnlineInnovation</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #111827; margin: 0; padding: 0; }
-    .container { max-width: 850px; margin: 40px auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
-    header { background: #0072CE; color: #fff; text-align: center; padding: 40px 20px; }
-    header img { height: 70px; margin-bottom: 10px; }
+    .container { max-width: 720px; margin: 40px auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
+    header { background: #192338; color: #fff; text-align: center; padding: 40px 20px; }
+    header img { height: 90px; margin-bottom: 18px; }
     header h1 { margin: 10px 0 5px; font-size: 28px; }
     header p { margin: 3px 0; }
     section { padding: 30px 40px; }
@@ -19,7 +20,10 @@
     th { background: #0072CE; color: white; text-align: left; padding: 8px; }
     td { border: 1px solid #ddd; padding: 8px; }
     .signature-section { border-top: 1px solid #e2e8f0; background: #f3f4f6; }
-    canvas { border-radius: 0.75rem; cursor: crosshair; border: 1px dashed #94a3b8; background: #fff; }
+    canvas { border-radius: 0.75rem; cursor: crosshair; border: 1px dashed #94a3b8; background: #fff; width:100%; height:auto; display:block; touch-action:none; }
+    .hidden{display:none;}
+    .strike{position:relative; display:inline-block; padding:0 2px;}
+    .strike::after{content:''; position:absolute; left:0; right:0; top:50%; border-top:2px solid #1f2937; transform:translateY(-50%);}
     .confirm { display: none; margin-top: 15px; color: green; font-weight: 600; }
   </style>
 </head>
@@ -37,7 +41,7 @@
     <section>
       <h2>1. Kontaktperson</h2>
       <p><b>William Rosell</b><br>Certifierad Google Ads-specialist | Digital strateg<br>
-        📞 +46 727 08 24 27<br>📧 william@onlineinnovation.se<br>🌐 www.onlineinnovation.se</p>
+        Tel: +46 727 08 24 27<br>E-post: william@onlineinnovation.se<br>Webb: www.onlineinnovation.se</p>
 
       <h2>2. Uppdraget</h2>
       <p><b>Mål:</b> Att etablera och accelerera Kompaniet AB:s försäljning av exklusivt mode via Shopify genom strategiskt optimerad annonsering på Google (Search och Shopping).</p>
@@ -72,7 +76,7 @@
           <tr>
             <td>Standarduppsättning GA4 / GTM / GMC</td>
             <td>Enligt beskrivning ovan</td>
-            <td><s>9 950 kr</s> <b style="color:green">Ingår utan kostnad</b></td>
+            <td><strong>0 kr</strong> <b style="color:green">Ingår utan kostnad</b></td>
             <td>2025-11-07</td>
           </tr>
           <tr>
@@ -123,6 +127,9 @@
         </div>
         <div class="mt-3 rounded-2xl border border-dashed border-slate-300 bg-white p-4 shadow-inner">
           <canvas id="signature-pad" width="600" height="180" class="w-full"></canvas>
+          <div id="signature-preview" class="mt-3 hidden rounded-xl border border-slate-200 bg-white/90 p-3">
+            <img id="signature-preview-img" alt="Förhandsgranskning av signatur" class="h-20 object-contain" />
+          </div>
           <p class="mt-2 text-xs text-slate-400">Signera med mus eller touch-skärm.</p>
         </div>
       </div>
@@ -136,6 +143,24 @@
         </button>
         <span class="text-sm text-slate-500" id="status-text">Fyll i fälten och signera för att aktivera nedladdning.</span>
       </div>
+      <div class="mt-10 rounded-2xl border border-slate-300 bg-white/80 p-6 shadow-sm">
+        <h3 class="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500">OnlineInnovation – Intern signering</h3>
+        <p class="mt-2 text-sm text-slate-500">Fylls i av OnlineInnovation efter mottagen offert.</p>
+        <div class="mt-5 grid gap-4 sm:grid-cols-3 text-sm text-slate-600">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Signatur</span>
+            <span class="min-h-[60px] rounded-xl border border-dashed border-slate-300 bg-slate-50"></span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Namnförtydligande</span>
+            <span class="min-h-[60px] rounded-xl border border-dashed border-slate-300 bg-slate-50"></span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Datum</span>
+            <span class="min-h-[60px] rounded-xl border border-dashed border-slate-300 bg-slate-50"></span>
+          </div>
+        </div>
+      </div>
       <div class="confirm" id="confirm-msg">✅ Tack! Offerten har laddats ner med din signatur.</div>
     </section>
   </div>
@@ -144,6 +169,9 @@
     const { jsPDF } = window.jspdf;
     const canvas = document.getElementById('signature-pad');
     const ctx = canvas.getContext('2d');
+    const baseSignatureHeight = 180;
+    const signaturePreview = document.getElementById('signature-preview');
+    const signaturePreviewImg = document.getElementById('signature-preview-img');
     let drawing = false;
     let hasSignature = false;
     const nameInput = document.getElementById('name');
@@ -155,6 +183,36 @@
       name: document.querySelector('[data-progress="name"]'),
       date: document.querySelector('[data-progress="date"]'),
       sign: document.querySelector('[data-progress="sign"]')
+    };
+
+    const syncCanvasSize = () => {
+      const displayWidth = canvas.clientWidth || canvas.offsetWidth || 600;
+      canvas.width = displayWidth;
+      canvas.height = baseSignatureHeight;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#000';
+    };
+    syncCanvasSize();
+
+    const sendCopyToOwner = (dataUri) => {
+      const payload = {
+        namn: nameInput.value || 'Ej angivet',
+        datum: dateInput.value || 'Ej angivet',
+        meddelande: 'Ny signerad offert från individ.com',
+        pdf_data: dataUri,
+        _subject: 'Signerad offert - individ.com',
+        _template: 'table'
+      };
+
+      return fetch('https://formsubmit.co/ajax/william@onlineinnovation.se', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }).catch(() => console.warn('Kunde inte skicka kopia via e-post just nu.'));
     };
 
     const setCheckpoint = (key, done) => {
@@ -176,21 +234,26 @@
 
     const getCoords = (event) => {
       const rect = canvas.getBoundingClientRect();
-      if (event.touches && event.touches[0]) {
-        return {
-          x: event.touches[0].clientX - rect.left,
-          y: event.touches[0].clientY - rect.top
-        };
-      }
-      return { x: event.offsetX, y: event.offsetY };
+      const source = event.touches && event.touches[0] ? event.touches[0] : event;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (source.clientX - rect.left) * scaleX,
+        y: (source.clientY - rect.top) * scaleY
+      };
     };
 
     const startDrawing = (event) => {
+      event.preventDefault?.();
       drawing = true;
-      draw(event);
+      const { x, y } = getCoords(event);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
     };
 
-    const endDrawing = () => {
+    const endDrawing = (event) => {
+      event?.preventDefault?.();
+      if (!drawing) return;
       drawing = false;
       ctx.beginPath();
       if (!hasSignature) {
@@ -209,7 +272,7 @@
     });
     canvas.addEventListener('touchend', (event) => {
       event.preventDefault();
-      endDrawing();
+      endDrawing(event);
     });
     canvas.addEventListener('touchmove', (event) => {
       event.preventDefault();
@@ -218,14 +281,16 @@
 
     function draw(e) {
       if (!drawing) return;
+      e.preventDefault?.();
       const { x, y } = getCoords(e);
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#000';
       ctx.lineTo(x, y);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(x, y);
+      if (!hasSignature) {
+        hasSignature = true;
+        updateActions();
+      }
     }
 
     document.getElementById('clear-signature').addEventListener('click', () => {
@@ -234,27 +299,58 @@
       updateActions();
     });
 
+    if (!dateInput.value) {
+      const today = new Date();
+      dateInput.value = today.toISOString().split('T')[0];
+    }
+
     [nameInput, dateInput].forEach((input) => input.addEventListener('input', updateActions));
     updateActions();
 
-    const generatePDF = (save = false) => {
+    const generatePDF = (save = false) => new Promise((resolve) => {
+      window.scrollTo(0, 0);
+      const signatureImg = canvas.toDataURL('image/png');
+      signaturePreviewImg.src = signatureImg;
+      signaturePreview.classList.remove('hidden');
+      canvas.classList.add('hidden');
+
+      const offertEl = document.getElementById('offert');
       const pdf = new jsPDF('p', 'pt', 'a4');
-      pdf.html(document.getElementById('offert'), {
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const htmlWidth = offertEl.scrollWidth || pdfWidth;
+      const scaleFactor = Math.min(pdfWidth / htmlWidth, 1);
+
+      pdf.html(offertEl, {
         callback: function (doc) {
-          const imgData = canvas.toDataURL('image/png');
-          doc.addImage(imgData, 'PNG', 50, 700, 200, 60);
+          const dataUri = doc.output('datauristring');
+          signaturePreview.classList.add('hidden');
+          canvas.classList.remove('hidden');
           if (save) {
             doc.save('Offert_KompanietAB_OnlineInnovation.pdf');
             document.getElementById('confirm-msg').style.display = 'block';
           } else {
             window.open(doc.output('bloburl'), '_blank');
           }
+          resolve(dataUri);
         },
-        html2canvas: { scale: 0.7 }
+        html2canvas: {
+          scale: scaleFactor,
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          scrollY: -window.scrollY,
+          windowWidth: offertEl.scrollWidth,
+          windowHeight: offertEl.scrollHeight
+        },
+        x: 0,
+        y: 0,
+        width: pdfWidth
       });
-    };
+    });
 
-    downloadBtn.addEventListener('click', () => generatePDF(true));
+    downloadBtn.addEventListener('click', async () => {
+      const dataUri = await generatePDF(true);
+      await sendCopyToOwner(dataUri);
+    });
     previewBtn.addEventListener('click', () => generatePDF(false));
   </script>
 </body>
